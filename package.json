@@ -1,0 +1,14 @@
+{
+  "name": "sensenova-u1.5-lite-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SenseNova U1.5 Lite 图像创作台 — 文生图 / 图片编辑单页应用 + 本地同源服务",
+  "scripts": {
+    "start": "node serve.js",
+    "serve": "node serve.js",
+    "proxy": "node proxy.js"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
