@@ -2,7 +2,8 @@
   "name": "sensenova-u1.5-lite-studio",
   "version": "2.0.0",
   "private": true,
-  "description": "SenseNova U1.5 Lite 图像创作台 — React Flow 时间树 + 本地归档",
+  "license": "MIT",
+  "description": "A local studio for SenseNova U1.5 Lite: text-to-image and image editing with local archiving and a draggable, git-like time tree. 基于 SenseNova U1.5 Lite 的本地图像创作台：文生图 / 图片编辑，结果自动归档，可用可拖拽的类 git 时间树从任意历史节点开分支。",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

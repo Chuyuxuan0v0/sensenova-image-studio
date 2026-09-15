@@ -1,6 +1,10 @@
 # SenseNova U1.5 Lite · 图像创作台
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-4c82fb.svg)](LICENSE)
+
 基于 [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs)（`sensenova-u1.5-lite`，Neo-unify 架构）的图像创作工具：**文生图 / 图片编辑**，每张结果自动本地归档，并用**可拖拽的时间树**做类 git 的分支回溯。
+
+A local studio for SenseNova U1.5 Lite: text-to-image and image editing with automatic local archiving, plus a draggable, git-like time tree for branching from any past generation.
 
 ![界面总览](docs/ui-overview.png)
 
@@ -101,3 +105,11 @@ output/                   生成图片归档（含 tree.json，已 gitignore）
 
 默认 `9119`（服务与代理）。可用环境变量改：`PORT=8080 npm start`。
 dev 模式 Vite 默认 `5173`。
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
+采用 MIT 许可证，见 [LICENSE](LICENSE)。**英文版为正式文本（authoritative）**，中文参考译文见 [LICENSE.zh-CN.md](LICENSE.zh-CN.md)；如两者有歧义，以英文版为准。
+
+Copyright (c) 2026 Chuyuxuan0v0
