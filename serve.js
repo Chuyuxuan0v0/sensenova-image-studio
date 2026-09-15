@@ -214,7 +214,7 @@ function serveOutput(res, rawPath) {
     '<!doctype html><meta charset="utf-8"><title>output/ · 本地归档</title>' +
       '<body style="background:#0b0b0e;color:#edeef2;font:14px/1.6 system-ui;padding:32px;margin:0">' +
       `<h1 style="font-size:16px;font-weight:600;margin:0 0 4px">本地归档 output/</h1>` +
-      `<p style="color:#6d6e7e;font-size:12px;margin:0 0 20px">${tree.length} 个节点 · ${files.length} 个文件 · ${esc(OUT_DIR)}</p>` +
+      `<p style="color:#6d6e7e;font-size:12px;margin:0 0 20px">${tree.length} 个节点 · ${files.length} 个文件</p>` +
       `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;max-width:1200px">${cards}</div>` +
       (tree.length ? '' : '<p style="color:#6d6e7e">还没有归档图片。</p>') +
       '</body>'

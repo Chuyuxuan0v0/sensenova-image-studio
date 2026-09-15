@@ -2,6 +2,8 @@
 
 基于 [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs)（`sensenova-u1.5-lite`，Neo-unify 架构）的图像创作工具：**文生图 / 图片编辑**，每张结果自动本地归档，并用**可拖拽的时间树**做类 git 的分支回溯。
 
+![界面总览](docs/ui-overview.png)
+
 ## 界面
 
 三段式布局，全视口无页面滚动条：
@@ -12,6 +14,18 @@
 | 左 · 创作台 | API Key、Base URL、模式切换、参考图、Prompt、参数、生成按钮 |
 | 中 · 历史时间树 | React Flow 画布，节点可拖动、缩放、平移，带缩略图与小地图 |
 | 右 · 节点检查器 | 选中节点的大图、完整参数、操作（基于此编辑 / 复用参数 / 下载 / 移除） |
+
+### 时间树：可拖拽的生成历史
+
+![时间树](docs/ui-tree.png)
+
+每张结果图是一个节点。文生图是根节点，图片编辑挂在参考图所属节点之下，因此能像 git 一样从任意历史节点开出分支。节点可自由拖动摆放，也能缩放、平移、小地图定位。
+
+### 从任意节点分支编辑
+
+![在历史节点上分支编辑](docs/ui-edit-branch.png)
+
+在树上点一个节点，右侧检查器点「基于此编辑」，参考图与 prompt 自动回填，本次编辑会挂在所选节点之下，形成新分支。
 
 ## 技术栈
 
@@ -69,6 +83,7 @@ web/
 serve.js                  本地服务：dist/ + /api 归档 + /v1 代理
 proxy.js                  纯 CORS 代理（供双击静态文件场景）
 vite.config.mjs           Vite 配置（root=web，outDir=../dist，dev 代理）
+docs/                     README 截图
 output/                   生成图片归档（含 tree.json，已 gitignore）
 ```
 
