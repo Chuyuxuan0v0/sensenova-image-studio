@@ -1,66 +1,88 @@
 # SenseNova U1.5 Lite · 图像创作台
 
-基于 [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs)（`sensenova-u1.5-lite`，Neo-unify 架构）的单页图像创作应用，支持 **文生图** 与 **图片编辑** 两种模式，参数全部按官方文档实现。
+基于 [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs)（`sensenova-u1.5-lite`，Neo-unify 架构）的图像创作工具：**文生图 / 图片编辑**，每张结果自动本地归档，并用**可拖拽的时间树**做类 git 的分支回溯。
+
+## 界面
+
+三段式布局，全视口无页面滚动条：
+
+| 区域 | 内容 |
+|------|------|
+| 顶栏 | 品牌、模型标识、归档服务连接状态、`output/` 入口 |
+| 左 · 创作台 | API Key、Base URL、模式切换、参考图、Prompt、参数、生成按钮 |
+| 中 · 历史时间树 | React Flow 画布，节点可拖动、缩放、平移，带缩略图与小地图 |
+| 右 · 节点检查器 | 选中节点的大图、完整参数、操作（基于此编辑 / 复用参数 / 下载 / 移除） |
+
+## 技术栈
+
+- **Vite + React 19** — 组件拆分，构建产物 `dist/`
+- **@xyflow/react（React Flow）** — 时间树画布，节点原生可拖拽、缩放、平移、小地图
+- **@dagrejs/dagre** — 自动树布局（左→右），「重新布局」一键复位
+- **Tailwind CSS v4** — 设计令牌（`@theme`）
+- **@phosphor-icons/react** — 图标（不使用 emoji）
+- **zustand** — 跨面板状态
+- **@fontsource-variable/geist** — 自托管 Geist / Geist Mono
 
 ## 功能
 
-- **文生图** — 调用 `POST /v1/images/generations`，输入 prompt 生成图片
-- **图片编辑** — 调用 `POST /v1/images/edits`，上传/粘贴参考图 + 编辑指令改写图片
-- 两个模式调用**不同接口**，编辑模式必须传入参考图
-- 参数：`size`（auto + 6 档 2K/4K 常量 + 自定义）、`output_format`（png/jpeg/webp）、`response_format`（b64_json/url）、`watermark`、`prompt_extend`、`n=1`
-- 结果：预览、下载、复制 Base64 / 新标签打开、**「基于此编辑」**闭环
-- **本地归档 + 时间树（类 git）**：每张结果图自动落到 `output/`，元数据写入 `output/tree.json`。
-  节点带 `parentId`，文生图是根节点，图片编辑的父节点 = 参考图所属节点。可在「时间树」里
-  回溯任意历史节点，点「基于此编辑」即在该节点上开出新分支，像 git 一样非线性演进。
-- API Key 与设置存 localStorage，`100dvh` 视口自适应无页面滚动条
+- **文生图** — `POST /v1/images/generations`
+- **图片编辑** — `POST /v1/images/edits`（独立接口，必须带参考图）
+- 参数：`size`（auto + 6 档 2K/4K 常量）、`output_format`、`response_format`、`watermark`、`prompt_extend`、`n=1`
+- **本地归档** — 每张结果落入 `output/`，索引在 `output/tree.json`；服务端下载图片，规避 CDN 链接 24h 失效与浏览器 CORS
+- **时间树（类 git）** — 文生图是根节点，图片编辑挂在参考图所属节点之下。可在任意历史节点「基于此编辑」开出新分支，非线性演进
+- API Key 与参数存 localStorage
 
-## 快速开始（推荐）
+## 快速开始
 
 ```bash
-cd D:\CodeProject\SensenovaModels
-npm start
+npm install
+npm start          # 构建产物 + 归档 API + 同源代理，自动开浏览器
 ```
 
-一条命令同时启动本地服务并自动打开浏览器，页面与代理**同源**，无 CORS / 无 file:// 问题。
+打开后在页面填入 [控制台](https://platform.sensenova.cn/console/keys) 的 `sk-` 密钥即可。
 
-然后：
-1. 在 [控制台 → API Keys](https://platform.sensenova.cn/console/keys) 获取 `sk-` 开头密钥，填入页面
-2. 写 Prompt，点「开始创作」
+### 开发模式（热更新）
 
-## 文件说明
+```bash
+npm start          # 一个终端：归档 API + 代理（9119）
+npm run dev        # 另一个终端：Vite dev server（5173，自动代理 /api 与 /v1）
+```
 
-| 文件 | 作用 |
-|------|------|
-| `index.html` | 单页应用主体（纯前端，无构建） |
-| `serve.js` | 一体化本地服务：页面 + 同源代理官方接口 + 归档 API，自动开浏览器 |
-| `proxy.js` | 纯 CORS 代理（不提供页面，供双击 html 使用） |
-| `package.json` | `npm start` 入口 |
-| `output/` | 生成图片的本地归档目录（含 `tree.json` 时间树索引，已 gitignore） |
+改前端代码用 `npm run dev` 更快；改 `serve.js` 需重启 `npm start`。发布前跑 `npm run build`。
 
-## 归档 API（由 serve.js 提供）
+## 目录结构
+
+```
+web/
+  index.html              Vite 入口
+  src/
+    main.jsx              入口（字体、React Flow 样式）
+    App.jsx               布局外壳、顶栏、Toast
+    store.js              zustand 状态（配置 / 生成 / 归档 / 分支）
+    api.js                接口封装（/api/* 与官方图片接口）
+    theme.css             设计令牌 + React Flow 暗色覆盖
+    components/
+      ControlPanel.jsx    左：创作台
+      TreeGraph.jsx       中：React Flow 时间树（dagre 布局）
+      ImageNode.jsx       树节点卡片
+      Inspector.jsx       右：节点检查器
+serve.js                  本地服务：dist/ + /api 归档 + /v1 代理
+proxy.js                  纯 CORS 代理（供双击静态文件场景）
+vite.config.mjs           Vite 配置（root=web，outDir=../dist，dev 代理）
+output/                   生成图片归档（含 tree.json，已 gitignore）
+```
+
+## 归档 API（serve.js 提供）
 
 | 端点 | 说明 |
 |------|------|
-| `POST /api/save` | 归档一张结果图。body：`{mode, prompt, params, parentId, imageBase64 \| imageUrl}`，服务端落盘并返回新节点 |
+| `POST /api/save` | 归档结果图。body：`{mode, prompt, params, parentId, imageBase64 \| imageUrl}` |
 | `GET /api/tree` | 返回全部节点（时间树索引） |
-| `GET /api/image/<id>` | 返回节点图片（本地永久，不随 CDN 链接过期） |
+| `GET /api/image/<id>` | 返回节点图片（本地永久，不随 CDN 过期） |
 | `DELETE /api/node/<id>` | 从树中移除节点（仅移除索引，磁盘文件保留，避免破坏其它分支） |
-
-## 单独使用代理（双击打开 html）
-
-若不想用 `serve.js` 而直接双击 `index.html` 打开，先启动代理：
-
-```bash
-node proxy.js
-```
-
-页面里「Base URL」填 `http://localhost:9119/v1` 即可（默认值已是这个）。
+| `GET /output/` | 归档目录的图片浏览页 |
 
 ## 端口
 
-默认 `9119`，可用环境变量改：
-
-```bash
-PORT=8080 npm start          # 页面+代理端口
-PROXY_PORT=8080 node proxy.js # 纯代理端口
-```
+默认 `9119`（服务与代理）。可用环境变量改：`PORT=8080 npm start`。
+dev 模式 Vite 默认 `5173`。

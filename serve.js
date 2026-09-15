@@ -11,7 +11,8 @@ const { exec } = require('child_process');
 const PORT = process.env.PORT || 9119;
 const UPSTREAM_HOST = 'token.sensenova.cn';
 const ROOT = __dirname;
-const INDEX = path.join(ROOT, 'index.html');
+const DIST_DIR = path.join(ROOT, 'dist');
+const INDEX = path.join(DIST_DIR, 'index.html');
 const OUT_DIR = path.join(ROOT, 'output');
 const TREE_FILE = path.join(OUT_DIR, 'tree.json');
 
@@ -169,6 +170,57 @@ async function handleApi(req, res, rawPath) {
   return json(res, 404, { error: 'unknown api path: ' + rawPath });
 }
 
+// ---- 前端页面（构建产物 dist/）----
+function serveApp(res) {
+  if (!fs.existsSync(INDEX)) {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    return res.end(
+      '<!doctype html><meta charset="utf-8"><body style="background:#0b0b0e;color:#edeef2;font:14px/1.7 system-ui;padding:48px;max-width:640px;margin:auto">' +
+        '<h2 style="font-weight:600">前端尚未构建</h2>' +
+        '<p style="color:#a2a3b0">先执行 <code style="background:#17171d;padding:2px 6px;border-radius:4px">npm run build</code> 生成 dist/，' +
+        '或者用 <code style="background:#17171d;padding:2px 6px;border-radius:4px">npm run dev</code> 打开开发服务器（http://localhost:5173，自带热更新与 /api /v1 代理）。</p>' +
+        '<p style="color:#6d6e7e">当前地址 /api/tree 与 /v1/* 代理仍可正常使用。</p></body>'
+    );
+  }
+  return serveFile(INDEX, res);
+}
+
+// ---- output/ 目录浏览 ----
+function serveOutput(res, rawPath) {
+  const rel = rawPath.replace(/^\/output\/?/, '');
+  if (rel) {
+    const f = path.normalize(path.join(OUT_DIR, rel));
+    if (f.startsWith(OUT_DIR) && fs.existsSync(f) && fs.statSync(f).isFile()) return serveFile(f, res);
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('404 Not Found: ' + rawPath);
+  }
+  const tree = readTree();
+  const files = fs.existsSync(OUT_DIR) ? fs.readdirSync(OUT_DIR).filter((f) => f !== 'tree.json') : [];
+  const esc = (s) => String(s).replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  const cards = tree
+    .slice()
+    .reverse()
+    .map(
+      (n) =>
+        `<figure style="margin:0"><a href="/output/${esc(n.file)}" target="_blank">` +
+        `<img src="/api/image/${esc(n.id)}" alt="${esc(n.id)}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #26262f;display:block"></a>` +
+        `<figcaption style="font:11px/1.5 ui-monospace,monospace;color:#a2a3b0;margin-top:6px">` +
+        `<b style="color:#cfe0ff">${esc(n.id)}</b> · ${n.mode === 'edit' ? '编辑' : '生成'} · ${esc(n.params && n.params.size)}<br>` +
+        `<span style="color:#6d6e7e">${esc((n.prompt || '').slice(0, 40))}</span></figcaption></figure>`
+    )
+    .join('');
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(
+    '<!doctype html><meta charset="utf-8"><title>output/ · 本地归档</title>' +
+      '<body style="background:#0b0b0e;color:#edeef2;font:14px/1.6 system-ui;padding:32px;margin:0">' +
+      `<h1 style="font-size:16px;font-weight:600;margin:0 0 4px">本地归档 output/</h1>` +
+      `<p style="color:#6d6e7e;font-size:12px;margin:0 0 20px">${tree.length} 个节点 · ${files.length} 个文件 · ${esc(OUT_DIR)}</p>` +
+      `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;max-width:1200px">${cards}</div>` +
+      (tree.length ? '' : '<p style="color:#6d6e7e">还没有归档图片。</p>') +
+      '</body>'
+  );
+}
+
 // ---- 静态文件 ----
 function serveFile(file, res) {
   fs.readFile(file, (err, buf) => {
@@ -222,15 +274,20 @@ const server = http.createServer((req, res) => {
 
   const rawPath = decodeURIComponent(req.url.split('?')[0]);
 
-  if (rawPath === '/' || rawPath === '/index.html') return serveFile(INDEX, res);
+  if (rawPath === '/' || rawPath === '/index.html') return serveApp(res);
   if (rawPath.startsWith('/v1/')) return proxyToUpstream(req, res);
   if (rawPath.startsWith('/api/')) return handleApi(req, res, rawPath);
+  if (rawPath === '/output' || rawPath.startsWith('/output/')) return serveOutput(res, rawPath);
 
-  // 其它静态文件（限项目目录内）
-  const file = path.normalize(path.join(ROOT, rawPath));
-  if (file.startsWith(ROOT) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-    return serveFile(file, res);
+  // 静态资源：优先 dist/ 构建产物，其次项目目录
+  for (const base of [DIST_DIR, ROOT]) {
+    const f = path.normalize(path.join(base, rawPath));
+    if (f.startsWith(base) && fs.existsSync(f) && fs.statSync(f).isFile()) return serveFile(f, res);
   }
+
+  // SPA 回退
+  if (fs.existsSync(INDEX)) return serveFile(INDEX, res);
+
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('404 Not Found: ' + rawPath);
 });

@@ -1,14 +1,32 @@
 {
   "name": "sensenova-u1.5-lite-studio",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "SenseNova U1.5 Lite 图像创作台 — 文生图 / 图片编辑单页应用 + 本地同源服务",
+  "description": "SenseNova U1.5 Lite 图像创作台 — React Flow 时间树 + 本地归档",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
     "start": "node serve.js",
     "serve": "node serve.js",
     "proxy": "node proxy.js"
   },
+  "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@phosphor-icons/react": "^2.1.7",
+    "@xyflow/react": "^12.11.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.14",
+    "@vitejs/plugin-react": "^5.0.4",
+    "tailwindcss": "^4.1.14",
+    "vite": "^7.1.9"
+  },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   }
 }

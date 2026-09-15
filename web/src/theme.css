@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Design tokens - "darkroom" editor theme
+   Base: zinc near-black. One accent: electric blue. No AI-purple,
+   no gradients, no glows. Radius rule: panels 12px, controls 10px,
+   chips 6px, status pills full.
+   ------------------------------------------------------------------ */
+@theme {
+  --color-canvas:      #0b0b0e;
+  --color-surface:     #121216;
+  --color-surface-2:   #17171d;
+  --color-surface-3:   #1e1e26;
+  --color-line:        #26262f;
+  --color-line-2:      #33333f;
+
+  --color-ink:         #edeef2;
+  --color-ink-2:       #a2a3b0;
+  --color-ink-3:       #6d6e7e;
+
+  --color-accent:      #4c82fb;
+  --color-accent-soft: #1a2740;
+  --color-accent-ink:  #cfe0ff;
+
+  --color-ok:          #34d399;
+  --color-warn:        #fbbf24;
+  --color-err:         #f87171;
+
+  --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --radius-panel: 12px;
+  --radius-ctl: 10px;
+  --radius-chip: 6px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv01";
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Numbers read as data everywhere */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus ring: one style, keyboard-only */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbars sized to the theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-2) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-line-2);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #454554;
+  background-clip: content-box;
+}
+
+/* ---------------- React Flow theme overrides ---------------- */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: #3a3a48;
+  --xy-edge-stroke-width: 1.5;
+  --xy-edge-stroke-selected: var(--color-accent);
+  --xy-attribution-background-color: transparent;
+}
+.react-flow__attribution {
+  background: transparent;
+  color: var(--color-ink-3);
+  font-size: 9px;
+}
+.react-flow__attribution a {
+  color: var(--color-ink-3);
+}
+.react-flow__handle {
+  width: 7px;
+  height: 7px;
+  background: var(--color-line-2);
+  border: 1px solid var(--color-surface);
+}
+.react-flow__node {
+  font-family: var(--font-sans);
+}
+.react-flow__controls {
+  box-shadow: none;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-ctl);
+  overflow: hidden;
+  background: var(--color-surface-2);
+}
+.react-flow__controls-button {
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink-2);
+  width: 26px;
+  height: 26px;
+}
+.react-flow__controls-button:hover {
+  background: var(--color-surface-3);
+  color: var(--color-ink);
+}
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+.react-flow__minimap {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-ctl);
+  overflow: hidden;
+  background: var(--color-surface-2) !important;
+}
+.react-flow__minimap-mask {
+  fill: rgba(11, 11, 14, 0.72);
+  stroke: var(--color-line-2);
+  stroke-width: 1;
+}
+
+/* Edge highlight for the path to the selected node */
+.react-flow__edge.hot .react-flow__edge-path {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
