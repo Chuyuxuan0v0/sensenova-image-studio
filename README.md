@@ -8,7 +8,10 @@
 - **图片编辑** — 调用 `POST /v1/images/edits`，上传/粘贴参考图 + 编辑指令改写图片
 - 两个模式调用**不同接口**，编辑模式必须传入参考图
 - 参数：`size`（auto + 6 档 2K/4K 常量 + 自定义）、`output_format`（png/jpeg/webp）、`response_format`（b64_json/url）、`watermark`、`prompt_extend`、`n=1`
-- 结果：预览、下载、复制 Base64 / 新标签打开、**「以此图作为编辑参考」**闭环、会话历史
+- 结果：预览、下载、复制 Base64 / 新标签打开、**「基于此编辑」**闭环
+- **本地归档 + 时间树（类 git）**：每张结果图自动落到 `output/`，元数据写入 `output/tree.json`。
+  节点带 `parentId`，文生图是根节点，图片编辑的父节点 = 参考图所属节点。可在「时间树」里
+  回溯任意历史节点，点「基于此编辑」即在该节点上开出新分支，像 git 一样非线性演进。
 - API Key 与设置存 localStorage，`100dvh` 视口自适应无页面滚动条
 
 ## 快速开始（推荐）
@@ -29,9 +32,19 @@ npm start
 | 文件 | 作用 |
 |------|------|
 | `index.html` | 单页应用主体（纯前端，无构建） |
-| `serve.js` | 一体化本地服务：提供页面 + 同源代理官方接口，自动开浏览器 |
+| `serve.js` | 一体化本地服务：页面 + 同源代理官方接口 + 归档 API，自动开浏览器 |
 | `proxy.js` | 纯 CORS 代理（不提供页面，供双击 html 使用） |
 | `package.json` | `npm start` 入口 |
+| `output/` | 生成图片的本地归档目录（含 `tree.json` 时间树索引，已 gitignore） |
+
+## 归档 API（由 serve.js 提供）
+
+| 端点 | 说明 |
+|------|------|
+| `POST /api/save` | 归档一张结果图。body：`{mode, prompt, params, parentId, imageBase64 \| imageUrl}`，服务端落盘并返回新节点 |
+| `GET /api/tree` | 返回全部节点（时间树索引） |
+| `GET /api/image/<id>` | 返回节点图片（本地永久，不随 CDN 链接过期） |
+| `DELETE /api/node/<id>` | 从树中移除节点（仅移除索引，磁盘文件保留，避免破坏其它分支） |
 
 ## 单独使用代理（双击打开 html）
 
