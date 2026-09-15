@@ -1,115 +1,115 @@
-# SenseNova U1.5 Lite · 图像创作台
+# SenseNova U1.5 Lite Image Studio
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-4c82fb.svg)](LICENSE)
 
-基于 [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs)（`sensenova-u1.5-lite`，Neo-unify 架构）的图像创作工具：**文生图 / 图片编辑**，每张结果自动本地归档，并用**可拖拽的时间树**做类 git 的分支回溯。
+**English** · [中文](README.zh-CN.md)
 
-A local studio for SenseNova U1.5 Lite: text-to-image and image editing with automatic local archiving, plus a draggable, git-like time tree for branching from any past generation.
+A local studio for [SenseNova U1.5 Lite](https://platform.sensenova.cn/docs) (`sensenova-u1.5-lite`, built on the Neo-unify architecture): text-to-image and image editing. Every result is archived locally, and a draggable time tree gives you git-like branching from any past generation.
 
-![界面总览](docs/ui-overview.png)
+![UI overview](docs/ui-overview.png)
 
-## 界面
+## Interface
 
-三段式布局，全视口无页面滚动条：
+A three-pane layout that fills the viewport with no page scrollbar. The UI labels are currently in Chinese.
 
-| 区域 | 内容 |
-|------|------|
-| 顶栏 | 品牌、模型标识、归档服务连接状态、`output/` 入口 |
-| 左 · 创作台 | API Key、Base URL、模式切换、参考图、Prompt、参数、生成按钮 |
-| 中 · 历史时间树 | React Flow 画布，节点可拖动、缩放、平移，带缩略图与小地图 |
-| 右 · 节点检查器 | 选中节点的大图、完整参数、操作（基于此编辑 / 复用参数 / 下载 / 移除） |
+| Pane | Contents |
+|------|----------|
+| Top bar | Brand, model id, archive service status, `output/` link |
+| Left, Studio | API key, base URL, mode switch, reference images, prompt, parameters, generate button |
+| Center, History time tree | React Flow canvas: draggable, zoomable, pannable nodes with thumbnails and a minimap |
+| Right, Node inspector | Large preview of the selected node, full parameters, actions (branch from this / reuse params / download / remove) |
 
-### 时间树：可拖拽的生成历史
+### Time tree: a draggable generation history
 
-![时间树](docs/ui-tree.png)
+![Time tree](docs/ui-tree.png)
 
-每张结果图是一个节点。文生图是根节点，图片编辑挂在参考图所属节点之下，因此能像 git 一样从任意历史节点开出分支。节点可自由拖动摆放，也能缩放、平移、小地图定位。
+Each result image is a node. A text-to-image run creates a root node; an image edit attaches under the node its reference image came from. That is what makes branching from any historical node possible, the way you would in git. Nodes can be dragged anywhere on the canvas, which also supports zoom, pan, and minimap navigation.
 
-### 从任意节点分支编辑
+### Branching from any node
 
-![在历史节点上分支编辑](docs/ui-edit-branch.png)
+![Branching from a historical node](docs/ui-edit-branch.png)
 
-在树上点一个节点，右侧检查器点「基于此编辑」，参考图与 prompt 自动回填，本次编辑会挂在所选节点之下，形成新分支。
+Click a node on the tree, then hit "基于此编辑" (branch from this) in the inspector. The reference image and prompt are filled in for you, and the next edit attaches under the node you picked, creating a new branch.
 
-## 技术栈
+## Tech stack
 
-- **Vite + React 19** — 组件拆分，构建产物 `dist/`
-- **@xyflow/react（React Flow）** — 时间树画布，节点原生可拖拽、缩放、平移、小地图
-- **@dagrejs/dagre** — 自动树布局（左→右），「重新布局」一键复位
-- **Tailwind CSS v4** — 设计令牌（`@theme`）
-- **@phosphor-icons/react** — 图标（不使用 emoji）
-- **zustand** — 跨面板状态
-- **@fontsource-variable/geist** — 自托管 Geist / Geist Mono
+- **Vite + React 19**: split into components, builds to `dist/`
+- **@xyflow/react (React Flow)**: the time tree canvas. Node dragging, zoom, pan, and minimap come from the library
+- **@dagrejs/dagre**: automatic left-to-right tree layout, plus one-click re-layout
+- **Tailwind CSS v4**: design tokens declared via `@theme`
+- **@phosphor-icons/react**: icons (no emoji)
+- **zustand**: state shared across the three panes
+- **@fontsource-variable/geist**: self-hosted Geist / Geist Mono
 
-## 功能
+## Features
 
-- **文生图** — `POST /v1/images/generations`
-- **图片编辑** — `POST /v1/images/edits`（独立接口，必须带参考图）
-- 参数：`size`（auto + 6 档 2K/4K 常量）、`output_format`、`response_format`、`watermark`、`prompt_extend`、`n=1`
-- **本地归档** — 每张结果落入 `output/`，索引在 `output/tree.json`；服务端下载图片，规避 CDN 链接 24h 失效与浏览器 CORS
-- **时间树（类 git）** — 文生图是根节点，图片编辑挂在参考图所属节点之下。可在任意历史节点「基于此编辑」开出新分支，非线性演进
-- API Key 与参数存 localStorage
+- **Text-to-image**: `POST /v1/images/generations`
+- **Image editing**: `POST /v1/images/edits` (a separate endpoint that requires a reference image)
+- Parameters: `size` (auto plus six 2K/4K presets), `output_format`, `response_format`, `watermark`, `prompt_extend`, `n=1`
+- **Local archiving**: every result lands in `output/`, indexed by `output/tree.json`. The server downloads the image itself, which sidesteps both the 24-hour CDN link expiry and browser CORS
+- **Time tree (git-like)**: text-to-image creates root nodes; edits attach under the node their reference came from. Branch from any historical node to evolve non-linearly
+- API key and parameters are stored in localStorage
 
-## 快速开始
+## Quick start
 
 ```bash
 npm install
-npm start          # 构建产物 + 归档 API + 同源代理，自动开浏览器
+npm start          # build output + archive API + same-origin proxy, opens the browser
 ```
 
-打开后在页面填入 [控制台](https://platform.sensenova.cn/console/keys) 的 `sk-` 密钥即可。
+Then paste an `sk-` key from the [console](https://platform.sensenova.cn/console/keys) into the page.
 
-### 开发模式（热更新）
+### Development mode (hot reload)
 
 ```bash
-npm start          # 一个终端：归档 API + 代理（9119）
-npm run dev        # 另一个终端：Vite dev server（5173，自动代理 /api 与 /v1）
+npm start          # terminal 1: archive API + proxy (9119)
+npm run dev        # terminal 2: Vite dev server (5173, proxies /api and /v1)
 ```
 
-改前端代码用 `npm run dev` 更快；改 `serve.js` 需重启 `npm start`。发布前跑 `npm run build`。
+Use `npm run dev` while iterating on the frontend, so you get hot reload. Changes to `serve.js` require restarting `npm start`. Run `npm run build` before publishing.
 
-## 目录结构
+## Project structure
 
 ```
 web/
-  index.html              Vite 入口
+  index.html              Vite entry
   src/
-    main.jsx              入口（字体、React Flow 样式）
-    App.jsx               布局外壳、顶栏、Toast
-    store.js              zustand 状态（配置 / 生成 / 归档 / 分支）
-    api.js                接口封装（/api/* 与官方图片接口）
-    theme.css             设计令牌 + React Flow 暗色覆盖
+    main.jsx              entry (fonts, React Flow styles)
+    App.jsx               layout shell, top bar, toast
+    store.js              zustand state (config / generation / archive / branching)
+    api.js                API wrappers (/api/* and the image endpoints)
+    theme.css             design tokens + React Flow dark overrides
     components/
-      ControlPanel.jsx    左：创作台
-      TreeGraph.jsx       中：React Flow 时间树（dagre 布局）
-      ImageNode.jsx       树节点卡片
-      Inspector.jsx       右：节点检查器
-serve.js                  本地服务：dist/ + /api 归档 + /v1 代理
-proxy.js                  纯 CORS 代理（供双击静态文件场景）
-vite.config.mjs           Vite 配置（root=web，outDir=../dist，dev 代理）
-docs/                     README 截图
-output/                   生成图片归档（含 tree.json，已 gitignore）
+      ControlPanel.jsx    left: studio
+      TreeGraph.jsx       center: React Flow time tree (dagre layout)
+      ImageNode.jsx       tree node card
+      Inspector.jsx       right: node inspector
+serve.js                  local server: dist/ + /api archive + /v1 proxy
+proxy.js                  standalone CORS proxy (for opening static files directly)
+vite.config.mjs           Vite config (root=web, outDir=../dist, dev proxy)
+docs/                     README screenshots
+output/                   archived images (includes tree.json, gitignored)
 ```
 
-## 归档 API（serve.js 提供）
+## Archive API (served by serve.js)
 
-| 端点 | 说明 |
-|------|------|
-| `POST /api/save` | 归档结果图。body：`{mode, prompt, params, parentId, imageBase64 \| imageUrl}` |
-| `GET /api/tree` | 返回全部节点（时间树索引） |
-| `GET /api/image/<id>` | 返回节点图片（本地永久，不随 CDN 过期） |
-| `DELETE /api/node/<id>` | 从树中移除节点（仅移除索引，磁盘文件保留，避免破坏其它分支） |
-| `GET /output/` | 归档目录的图片浏览页 |
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/save` | Archive a result. Body: `{mode, prompt, params, parentId, imageBase64 \| imageUrl}` |
+| `GET /api/tree` | Return all nodes (the time tree index) |
+| `GET /api/image/<id>` | Return a node's image (served locally, so it never expires with the CDN) |
+| `DELETE /api/node/<id>` | Remove a node from the tree (index only; the file stays on disk so other branches keep working) |
+| `GET /output/` | Browse the archive directory |
 
-## 端口
+## Ports
 
-默认 `9119`（服务与代理）。可用环境变量改：`PORT=8080 npm start`。
-dev 模式 Vite 默认 `5173`。
+The server and proxy default to `9119`. Override with an environment variable: `PORT=8080 npm start`.
+The Vite dev server defaults to `5173`.
 
 ## License
 
 MIT License. See [LICENSE](LICENSE).
 
-采用 MIT 许可证，见 [LICENSE](LICENSE)。**英文版为正式文本（authoritative）**，中文参考译文见 [LICENSE.zh-CN.md](LICENSE.zh-CN.md)；如两者有歧义，以英文版为准。
+The English text is authoritative. A Chinese reference translation is in [LICENSE.zh-CN.md](LICENSE.zh-CN.md).
 
 Copyright (c) 2026 Chuyuxuan0v0
